@@ -1,17 +1,16 @@
 = MonkeyPatch
 
-This project is a little big special, in that it's value is as much in the libraries it proposes, than in the documentation that accompanies it. This is why most documentation is linked to the generated documentation of the code, and why I can't stress you more than to read it troughfully.
+  <INSERT NICE INTRO HERE>
 
-With power comes responsability, and ruby gives you a lot of power. Follow the MonkeyPatch link to read more about the wisdom you could use when extanding and fixing objects that are external to your code.
+  Do you monkeys, patch ? If so, use this library, you won't regret it.
 
-Cheers,
-  zimbatm
+  Why use a library when you could do all this by hand ? For two reasons:
 
-== Goals
+  1. We provide the mechanism to protect from patch collision
+  2. By including this gem as dependency, you declare your project is
+     monkeypatching.
 
-* make monkeypatching explicit
-* add some checks to make it more safe
-* make it easy to use
+  </INSERT NICE INTRO HERE>
 
 == Usage
 
@@ -26,12 +25,10 @@ Example usage:
 == Ideas
 
 * method re-definition or module/class extension could be detected, especially when using Gems. The load-path is not the same between the original definition and the new-one.
-* having the monkeypatch gem as a dependency indicates that you're extending the core.
 * load-path as namespace
 
 == TODO
 
 * Add programmable patching conditions
 * Add reason string
-* Cleanup the doc
 * Add 'monkeywarn' that warns when a monkeypatch is applied

@@ -1,19 +1,25 @@
 =begin rdoc
 
-See README.rdoc
+This is the public API to produce new patches.
+
+Once you have a patch, look at Patch and it's children to see how to use it.
 
 =end
 module MonkeyPatch
+  # MonkeyPatch's version as a string
   VERSION = '0.1.0'
-  # May be raise on check_conflicts
+  # May be raised on check_conflicts
   class ConflictError < StandardError; end
   
   # A collection of patches. Used to collect one or more patches with the #& operator
   # 
   # NOTE: didn't use the Set class, to not force a dependency
   class PatchSet
-    def initialize(patches=[]); @patches = patches.to_a.uniq end
+    def initialize(patches) #:nodoc:
+      @patches = patches.to_a.uniq
+    end
     
+    # Aggregates Patch (es) and PatchSet (s)
     def &(other)
       PatchSet.new(@patches + other.to_a)
     end
@@ -35,26 +41,32 @@ module MonkeyPatch
     end
   end
   
+  # Abstract definition of a patch.
+  # 
+  # You cannot create Patch instance yourself, they are spawned from 
+  # MonkeyPatch class-methods.
   class Patch
     class << self
       # Hide new to force api usage
       private :new
     end
-    # The path it was defined in
+    # The callstack it was defined in
     attr_reader :from
     
-    def initialize(&patch_def)
+    def initialize(&patch_def) #:nodoc:
       raise ArgumentError, "patch_def not given" unless block_given?
       @patch_def = patch_def
     end
     
+    # Combine patches together. Produces a PatchSet instance.
     def &(other)
       PatchSet.new([self]) & other
     end
     
+    # Returns [self], used by #&
     def to_a; [self] end
   
-    # Patches the class or module. Patches classes are kept track of
+    # Patches a class or module instance methods
     def patch_class(klass)
       raise ArgumentError, "klass is not a Class" unless klass.kind_of?(Class)
       
@@ -67,7 +79,6 @@ module MonkeyPatch
         
       return true
     end
-    alias apply_to patch_class
 
     # Patches the instance's metaclass
     def patch_instance(obj)
@@ -82,7 +93,7 @@ module MonkeyPatch
     # If a condition isn't met, the patch is not applied
     #
     # Returns true if all conditions are matched
-    def check_conditions(klass);
+    def check_conditions(klass) #:nodoc:
       if klass.respond_to?(:applied_patches) && klass.applied_patches.include?(self)
         log "WARN: Patch already applied"
         return false
@@ -93,20 +104,24 @@ module MonkeyPatch
     # Re-implement in childs. Make sure super is called
     # 
     # raises a ConflictError if an error is found 
-    def check_conflicts!(klass); nil end
+    def check_conflicts!(klass) #:nodoc:
+    end
     
-    def apply_patch(klass)
+    def apply_patch(klass) #:nodoc:
       klass.extend IsPatched
       klass.class_eval(&@patch_def)
       klass.applied_patches.push self
     end
     
-    def log(msg); MonkeyPatch.logger.log(msg) end
+    def log(msg) #:nodoc:
+      MonkeyPatch.logger.log(msg)
+    end
   end
   
   class MethodPatch < Patch
+    # The name of the method to be patched
     attr_reader :method_name
-    def initialize(method_name, &patch_def)
+    def initialize(method_name, &patch_def) #:nodoc:
       super(&patch_def)
       @method_name = method_name.to_s
       unless Module.new(&patch_def).instance_methods(true) == [@method_name]
@@ -115,7 +130,7 @@ module MonkeyPatch
     end
     
   protected
-    def check_conflicts!(klass)
+    def check_conflicts!(klass) #:nodoc:
       super
       if klass.respond_to? :applied_patches
         others = klass.applied_patches.select{|p| p.respond_to?(:method_name) && p.method_name == method_name }
@@ -126,9 +141,10 @@ module MonkeyPatch
     end
   end
   
+  # Spawned by MonkeyPatch.add_method
   class AddMethodPatch < MethodPatch
   protected
-    def check_conflicts!(klass)
+    def check_conflicts!(klass) #:nodoc:
       super
       if klass.method_defined?(method_name)
         raise ConflictError, "Add already existing method #{method_name} in #{klass}"
@@ -136,9 +152,10 @@ module MonkeyPatch
     end
   end
   
+  # Spawned by MonkeyPatch.replace_method
   class ReplaceMethodPatch < MethodPatch
   protected
-    def check_conflicts!(klass)
+    def check_conflicts!(klass) #:nodoc:
       super
       unless klass.method_defined?(method_name)
         raise ConflictError, "Replacing method #{method_name} does not exist in #{klass}"
@@ -152,48 +169,38 @@ module MonkeyPatch
     def log(msg); STDERR.puts msg end
   end
   
-  # Included in patched objects, maybe add some utility methods ?
+  # This module extends patched objects to keep track of the applied patches
   module IsPatched
     def applied_patches; @__applied_patches__ ||= [] end
   end
   
   @logger = STDERRLogger.new
   @loaded_patches = []
-  @patch_registry = Hash.new([])
   class << self
     # Here goes the messages, this object should respond_to? :log
     # Default is STDERRLogger
     attr_accessor :logger
     
+    # All defined patches are stored here
     attr_reader :loaded_patches
-    # Here we keep track of all patched classes
-    attr_reader :patch_registry
     
     # Creates a new patch that adds a method to a class or a module
     # 
-    # Returns a AddMethodPatch
+    # Returns a Patch (AddMethodPatch)
     def add_method(method_name, &definition)
       new_patch AddMethodPatch.send(:new, method_name, &definition)
     end
     
     # Creates a new patch that replaces a method of a class or a module
     #
-    # Returns a ReplaceMethodPatch
+    # Returns a Patch (ReplaceMethodPatch)
     def replace_method(method_name, &definition)
       new_patch ReplaceMethodPatch.send(:new, method_name, &definition)
     end
-    
-    #def rename_method(method_name, new_method_name)
-      # TODO
-    #end
-    
-    #def deprecate_method(method_name)
-      # TODO
-    #end
   
   protected
     
-    def new_patch(patch, &definition)
+    def new_patch(patch, &definition) #:nodoc:
       #patch.validate
       patch.instance_variable_set(:@from, caller[1])
       @loaded_patches.push(patch)
