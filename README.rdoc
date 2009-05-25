@@ -31,7 +31,6 @@ Example usage:
 
 == TODO
 
-* Build gem
 * Add programmable patching conditions
 * Add reason string
 * Cleanup the doc
