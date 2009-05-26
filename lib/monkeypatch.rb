@@ -7,7 +7,7 @@ Once you have a patch, look at Patch and it's children to see how to use it.
 =end
 module MonkeyPatch
   # MonkeyPatch's version as a string
-  VERSION = '0.1.0'
+  VERSION = '0.1.1'
   # May be raised on check_conflicts
   class ConflictError < StandardError; end
   
