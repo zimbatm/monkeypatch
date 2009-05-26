@@ -23,7 +23,7 @@ task :gem => "gem:spec"
 
 namespace :gem do
 
-  spec_name = "ruby-monkeypatch.gemspec"
+  spec_name = "monkeypatch.gemspec"
   desc "Updates the #{spec_name} file if VERSION has changed"
   task :spec do
     if !File.exist?(spec_name) ||
