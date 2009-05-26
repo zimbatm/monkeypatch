@@ -135,5 +135,21 @@ class TestMonkeypatch < Test::Unit::TestCase
     assert_equal("exists", @c.new.new_method )
     assert_equal("replaced", @c.new.existing_method )
   end
+
+  def test_add_failing_condition
+    @p_add.add_condition("Failing condition") do |klass|
+      false
+    end
+    assert !@p_add.patch_class(@c)
+    assert !@c.respond_to?(:applied_patches)
+    assert_equal(["Failing condition"], @logs)
+  end
+
+  def test_working_condition
+    @p_add.add_condition("Working condition") do true end
+    assert @p_add.patch_class(@c)
+    assert @c.respond_to?(:applied_patches)
+    assert @logs.empty?
+  end
   
 end

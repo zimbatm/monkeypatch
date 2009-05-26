@@ -56,6 +56,10 @@ module MonkeyPatch
     def initialize(&patch_def) #:nodoc:
       raise ArgumentError, "patch_def not given" unless block_given?
       @patch_def = patch_def
+      @conditions = []
+      add_condition("Patch already applied") do |klass|
+        !(klass.respond_to?(:applied_patches) && klass.applied_patches.include?(self))
+      end
     end
     
     # Combine patches together. Produces a PatchSet instance.
@@ -86,6 +90,14 @@ module MonkeyPatch
       patch_class(meta)
     end
     
+    # Add a condition for patch application, like library version
+    # 
+    # If condition is not matched, +msg+ is 
+    def add_condition(msg, &block)
+      raise ArgumentError, "block is missing" unless block_given?
+      @conditions.push [block, msg]
+    end
+    
   protected
   
     # Condition are checks that raise nothing
@@ -94,11 +106,13 @@ module MonkeyPatch
     #
     # Returns true if all conditions are matched
     def check_conditions(klass) #:nodoc:
-      if klass.respond_to?(:applied_patches) && klass.applied_patches.include?(self)
-        log "WARN: Patch already applied"
-        return false
+      !@conditions.find do |tuple|
+        if tuple[0].call(klass); false
+        else
+          log tuple[1]
+          true
+        end
       end
-      true
     end
   
     # Re-implement in childs. Make sure super is called

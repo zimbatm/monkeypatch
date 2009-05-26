@@ -39,6 +39,6 @@ Once you have a patch object, look at the MonkeyPatch::Patch definition to know 
 
 ==== TODO
 
-* Add programmable patching conditions
+* Rework the documentation
 * Add reason string
 * Add 'monkeywarn' that warns when a monkeypatch is applied
