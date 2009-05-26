@@ -15,22 +15,23 @@ spec = Gem::Specification.new do |s|
   s.test_files = FileList['test/test*.rb']
 end
 
-file "ruby-monkeypatch.gemspec" do |t|
-  File.open(t.name, 'w') do |f|
-    f.write(spec.to_ruby)
-  end
-end
-
 Rake::GemPackageTask.new(spec) do |pkg|
 #  pkg.need_zip = true
 #  pkg.need_tar = true
 end
+task :gem => "gem:spec"
 
 namespace :gem do
-  desc "Updates the ruby-monkeypatch.gemspec file"
+
+  spec_name = "ruby-monkeypatch.gemspec"
+  desc "Updates the #{spec_name} file if VERSION has changed"
   task :spec do
-    File.open("ruby-monkeypatch.gemspec", 'w') do |f|
-      f.write(spec.to_ruby)
+    if !File.exist?(spec_name) ||
+      eval(File.read(spec_name)).version.to_s != MonkeyPatch::VERSION
+      File.open(spec_name, 'w') do |f|
+        f.write(spec.to_ruby)
+      end
+      STDOUT.puts "*** Gem specification updated ***"
     end
   end
 end
