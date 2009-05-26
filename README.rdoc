@@ -1,5 +1,7 @@
 = MonkeyPatch
 
+*WARNING: This is alpha code, the API is not stable yet.*
+
   <INSERT NICE INTRO HERE>
 
   Do you monkeys, patch ? If so, use this library, you won't regret it.
@@ -12,22 +14,30 @@
 
   </INSERT NICE INTRO HERE>
 
-== Usage
+Authors:: [ zimbatm <zimbatm@oree.ch> ]
+
+== Getting started
 
 Example usage:
 
   :include:example/patch_usage.rb
 
-== Related projects
+Look at the MonkeyPatch module to get an idea of the API.
+
+Once you have a patch object, look at the MonkeyPatch::Patch definition to know how to use it.
+
+----
+
+==== Related projects
 
 * http://github.com/coderrr/monkey_shield/ : provides sorts of namespaces to avoid patch collision
 
-== Ideas
+==== Ideas
 
 * method re-definition or module/class extension could be detected, especially when using Gems. The load-path is not the same between the original definition and the new-one.
 * load-path as namespace
 
-== TODO
+==== TODO
 
 * Add programmable patching conditions
 * Add reason string
