@@ -122,9 +122,9 @@ class TestMonkeypatch < Test::Unit::TestCase
     assert_equal(File.basename(__FILE__), File.basename(@p_add.from).gsub(/:.*/,''))
   end
   
-  def test_patch_set
+  def test_patch_bundle
     both = (@p_add & @p_repl)
-    assert_equal(PatchSet, both.class)
+    assert_equal(PatchBundle, both.class)
     
     inst = @c.new
     both.patch_instance(inst)

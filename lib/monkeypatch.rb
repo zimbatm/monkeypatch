@@ -12,16 +12,14 @@ module MonkeyPatch
   class ConflictError < StandardError; end
   
   # A collection of patches. Used to collect one or more patches with the #& operator
-  # 
-  # NOTE: didn't use the Set class, to not force a dependency
-  class PatchSet
+  class PatchBundle
     def initialize(patches) #:nodoc:
       @patches = patches.to_a.uniq
     end
     
-    # Aggregates Patch (es) and PatchSet (s)
+    # Aggregates Patch (es) and PatchBundle (s)
     def &(other)
-      PatchSet.new(@patches + other.to_a)
+      PatchBundle.new(@patches + other.to_a)
     end
     def to_a; @patches.dup end
     
@@ -62,9 +60,9 @@ module MonkeyPatch
       end
     end
     
-    # Combine patches together. Produces a PatchSet instance.
+    # Combine patches together. Produces a PatchBundle instance.
     def &(other)
-      PatchSet.new([self]) & other
+      PatchBundle.new([self]) & other
     end
     
     # Returns [self], used by #&
