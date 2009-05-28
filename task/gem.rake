@@ -16,6 +16,7 @@ spec = Gem::Specification.new do |s|
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|
+  pkg.package_dir = "build"
 #  pkg.need_zip = true
 #  pkg.need_tar = true
 end

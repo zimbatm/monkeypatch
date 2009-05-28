@@ -5,6 +5,7 @@ begin
     t.libs << "test"
     t.test_files = FileList['test/test*.rb']
     t.verbose = true
+    t.output_dir = "build/rcov"
   end
   
 rescue LoadError
