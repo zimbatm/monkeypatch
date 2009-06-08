@@ -10,6 +10,6 @@ begin
   
 rescue LoadError
   if !Rake.application.options.silent
-    STDERR.puts "*** Install the RCov for code coverage" 
+    STDERR.puts "*** `gem install rcov` for code coverage" 
   end
 end

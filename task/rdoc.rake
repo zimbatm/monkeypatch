@@ -3,7 +3,7 @@ begin
 rescue LoadError
   require 'rake/rdoctask'
   if !Rake.application.options.silent
-    STDERR.puts "*** Install the RDoc 2.X gem for nicer docs" 
+    STDERR.puts "*** `gem install rdoc` for nicer docs" 
   end
 end
 
