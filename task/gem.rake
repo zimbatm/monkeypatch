@@ -5,13 +5,13 @@ spec = Gem::Specification.new do |s|
   s.name = 'monkeypatch'
   s.version = MonkeyPatch::VERSION
   s.platform = Gem::Platform::RUBY
-  s.summary = "Monkey patching made safe(er)"
+  s.summary = "safer code patching at runtime"
   s.homepage = "http://github.com/zimbatm/monkeypatch"
-  s.description = "Provides a mechanism to avoid patch collision. It's also useful to tell if your project is using monkeypatching or not."
+  s.description = "Provides a patch collision detection engine for safer patch application."
   s.authors = ["zimbatm"]
   s.email = "zimbatm@oree.ch"
   s.has_rdoc = true
-  s.files = FileList['README.rdoc', 'Rakefile', 'lib/*', 'test/*', 'task/*', 'example/*']
+  s.files = FileList['README.rdoc', 'LICENCE', 'Rakefile', 'lib/*', 'test/*', 'task/*', 'example/*']
   s.test_files = FileList['test/test*.rb']
 end
 
