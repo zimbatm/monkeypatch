@@ -2,22 +2,24 @@ require 'test/unit'
 
 require 'monkeypatch'
 
+module StderrWrapper
+  def wrap_stderr(&block)
+    orig = $stderr
+    fake = []
+    def fake.write(str); push(str) end
+    $stderr = fake
+    yield
+    return fake
+  ensure
+    $stderr = orig
+  end
+end
+
 class TestMonkeypatch < Test::Unit::TestCase
   include MonkeyPatch
-  
-  class FakeLogger
-    attr_reader :logs
-    def initialize
-      @logs = []
-    end
-    def log(msg)
-      @logs.push msg
-    end
-  end
+  include StderrWrapper
   
   def setup
-    @logger = MonkeyPatch.logger = FakeLogger.new
-    @logs = @logger.logs
     @c = Class.new do
       def existing_method; "original" end
     end
@@ -44,10 +46,13 @@ class TestMonkeypatch < Test::Unit::TestCase
   end
 
   def test_do_not_apply_twice
-    @p_add.patch_class(@c)
-    @p_add.patch_class(@c)
-    assert_equal 1, @logs.size, "Should be the notice about the twice application"
-    assert_equal [@p_add], @c.applied_patches
+    wrap_stderr do
+      @p_add.patch_class(@c)
+      assert_equal 0, $stderr.size
+      @p_add.patch_class(@c)
+      assert_equal 2, $stderr.size, "Should be the notice about the twice application"
+      assert_equal [@p_add], @c.applied_patches
+    end
   end
   
   def test_add_method
@@ -140,16 +145,20 @@ class TestMonkeypatch < Test::Unit::TestCase
     @p_add.add_condition("Failing condition") do |klass|
       false
     end
-    assert !@p_add.patch_class(@c)
-    assert !@c.respond_to?(:applied_patches)
-    assert_equal(["Failing condition"], @logs)
+    wrap_stderr do
+      assert !@p_add.patch_class(@c)
+      assert !@c.respond_to?(:applied_patches)
+      assert_equal("Failing condition", $stderr.first)
+    end
   end
 
   def test_working_condition
-    @p_add.add_condition("Working condition") do true end
-    assert @p_add.patch_class(@c)
-    assert @c.respond_to?(:applied_patches)
-    assert @logs.empty?
+    wrap_stderr do
+      @p_add.add_condition("Working condition") do true end
+      assert @p_add.patch_class(@c)
+      assert @c.respond_to?(:applied_patches)
+      assert $stderr.empty?
+    end
   end
   
 end

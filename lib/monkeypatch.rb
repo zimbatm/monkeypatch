@@ -107,7 +107,7 @@ module MonkeyPatch
       !@conditions.find do |tuple|
         if tuple[0].call(klass); false
         else
-          log tuple[1]
+          warn tuple[1]
           true
         end
       end
@@ -123,10 +123,6 @@ module MonkeyPatch
       klass.extend IsPatched
       klass.class_eval(&@patch_def)
       klass.applied_patches.push self
-    end
-    
-    def log(msg) #:nodoc:
-      MonkeyPatch.logger.log(msg)
     end
   end
   
@@ -175,24 +171,13 @@ module MonkeyPatch
     end
   end
   
-  # Default MonkeyPatch::logger . Use the same interface
-  # if you want to replace it.
-  class STDERRLogger
-    def log(msg); STDERR.puts msg end
-  end
-  
   # This module extends patched objects to keep track of the applied patches
   module IsPatched
     def applied_patches; @__applied_patches__ ||= [] end
   end
   
-  @logger = STDERRLogger.new
   @loaded_patches = []
   class << self
-    # Here goes the messages, this object should respond_to? :log
-    # Default is STDERRLogger
-    attr_accessor :logger
-    
     # All defined patches are stored here
     attr_reader :loaded_patches
     
